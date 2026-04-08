@@ -1,0 +1,23 @@
+spec_version: 1
+name: servicebench_env
+type: space
+runtime: fastapi
+app: server.app:app
+port: 8000
+
+version: "0.1.0"
+description: >
+  A multi-service API orchestration environment for evaluating AI agents on
+  real-world backend operations tasks. Agents must make correct API calls across
+  UserService, OrderService, and InventoryService to accomplish increasingly
+  complex operational tasks.
+tasks: 3
+tags:
+  - openenv
+  - api-orchestration
+  - tool-use
+  - multi-service
+
+action: ServiceBenchAction
+observation: ServiceBenchObservation
+state: ServiceBenchState
