@@ -1,3 +1,13 @@
+---
+title: ServiceBench
+emoji: 🔧
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # ServiceBench: Multi-Service API Orchestration Environment
 
 [![OpenEnv](https://img.shields.io/badge/OpenEnv-compatible-blue)](https://github.com/meta-pytorch/OpenEnv)
