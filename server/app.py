@@ -27,7 +27,7 @@ _PARENT = os.path.join(os.path.dirname(__file__), "..")
 if _PARENT not in sys.path:
     sys.path.insert(0, _PARENT)
 
-from fastapi import FastAPI
+from fastapi import Body, FastAPI
 from pydantic import BaseModel
 from typing import Any, Dict, Optional
 
@@ -63,8 +63,11 @@ def health():
 
 
 @app.post("/reset")
-def reset(req: ResetRequest):
-    obs = _env.reset(seed=req.seed, episode_id=req.episode_id, task_id=req.task_id)
+def reset(req: Optional[ResetRequest] = Body(default=None)):
+    seed = req.seed if req is not None else None
+    episode_id = req.episode_id if req is not None else None
+    task_id = req.task_id if req is not None else 1
+    obs = _env.reset(seed=seed, episode_id=episode_id, task_id=task_id)
     return obs.model_dump()
 
 
