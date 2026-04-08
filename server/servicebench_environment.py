@@ -764,9 +764,18 @@ class ServiceBenchEnvironment(Environment):
             # Task complete once the agent has retrieved the order status for ORD-1005.
             return self._got_order_status
         if task_id == 2:
-            # Task complete once the refund is processed and status updated to "returned".
-            return self._t2_refund_processed and self._t2_status_updated
+            # Task complete once eligibility confirmed, item verified, refund processed, and status updated.
+            return (
+                self._t2_eligibility_confirmed
+                and self._t2_item_verified
+                and self._t2_refund_processed
+                and self._t2_status_updated
+            )
         if task_id == 3:
-            # Task complete once the correct $99.00 adjustment has been processed.
-            return self._t3_refund_processed
+            # Task complete once order retrieved, inventory verified, and correct refund issued.
+            return (
+                self._t3_order_looked_up
+                and self._t3_inventory_checked
+                and self._t3_refund_processed
+            )
         return False

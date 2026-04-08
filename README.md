@@ -197,12 +197,12 @@ Produced by `python inference.py --fallback`, which executes the hardcoded optim
 
 | Task | Difficulty | Description | Score |
 |---|---|---|---|
-| 1 | Easy | Order Status Lookup | 0.9000 |
-| 2 | Medium | Process Return and Refund | 0.8500 |
-| 3 | Hard | Billing Discrepancy Investigation | 0.7500 |
-| — | — | **Mean** | **0.8333** |
+| 1 | Easy | Order Status Lookup | 1.0000 |
+| 2 | Medium | Process Return and Refund | 1.0000 |
+| 3 | Hard | Billing Discrepancy Investigation | 1.0000 |
+| — | — | **Mean** | **1.0000** |
 
-These scores are fully reproducible across runs. Run `python inference.py --fallback` to verify.
+These are deterministic optimal-path scores — the fallback replays the exact correct action sequence for each task. An LLM agent operating without hardcoded sequences will typically score lower, particularly on Tasks 2 and 3 where reasoning under partial information is required. Run `python inference.py --fallback` to verify.
 
 ## ⚡ Setup & Usage
 

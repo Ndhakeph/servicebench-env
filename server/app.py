@@ -7,62 +7,91 @@
 """
 FastAPI application for the ServiceBench Environment.
 
-This module creates an HTTP server that exposes the ServiceBenchEnvironment
-over HTTP and WebSocket endpoints, compatible with EnvClient.
-
 Endpoints:
     - POST /reset: Reset the environment
     - POST /step: Execute an action
     - GET /state: Get current environment state
-    - GET /schema: Get action/observation schemas
-    - WS /ws: WebSocket endpoint for persistent sessions
     - GET /health: Health check
 
 Usage:
-    # Development (with auto-reload):
-    uvicorn server.app:app --reload --host 0.0.0.0 --port 8000
-
-    # Production:
-    uvicorn server.app:app --host 0.0.0.0 --port 8000 --workers 4
-
-    # Or run directly:
-    python -m server.app
+    uvicorn server.app:app --host 0.0.0.0 --port 7860
 """
 
-try:
-    from openenv.core.env_server.http_server import create_app
-except ImportError as e:  # pragma: no cover
-    raise ImportError(
-        "openenv is required for the web interface. Install dependencies with '\n    uv sync\n'"
-    ) from e
+from __future__ import annotations
 
-try:
-    from ..models import ServiceBenchAction, ServiceBenchObservation
-    from .servicebench_environment import ServiceBenchEnvironment
-except ImportError:
-    from models import ServiceBenchAction, ServiceBenchObservation
-    from server.servicebench_environment import ServiceBenchEnvironment
+import sys
+import os
+
+# Ensure parent directory is importable for models / mock_services
+_PARENT = os.path.join(os.path.dirname(__file__), "..")
+if _PARENT not in sys.path:
+    sys.path.insert(0, _PARENT)
+
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Any, Dict, Optional
+
+from models import ServiceBenchAction
+from server.servicebench_environment import ServiceBenchEnvironment
+
+app = FastAPI(title="ServiceBench Environment", version="0.1.0")
+
+# Single shared environment instance
+_env = ServiceBenchEnvironment()
 
 
-app = create_app(
-    ServiceBenchEnvironment,
-    ServiceBenchAction,
-    ServiceBenchObservation,
-    env_name="servicebench",
-    max_concurrent_envs=1,
-)
+# --- Request / Response schemas ---
+
+class ResetRequest(BaseModel):
+    task_id: int = 1
+    seed: Optional[int] = None
+    episode_id: Optional[str] = None
 
 
-def main(host: str = "0.0.0.0", port: int = 8000):
+class StepResponse(BaseModel):
+    observation: Dict[str, Any]
+    reward: float
+    done: bool
+    info: Dict[str, Any]
+
+
+# --- Endpoints ---
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
+
+@app.post("/reset")
+def reset(req: ResetRequest):
+    obs = _env.reset(seed=req.seed, episode_id=req.episode_id, task_id=req.task_id)
+    return obs.model_dump()
+
+
+@app.post("/step")
+def step(action: ServiceBenchAction):
+    result = _env.step(action)
+    return {
+        "observation": result.observation.model_dump(),
+        "reward": result.reward,
+        "done": result.done,
+        "info": result.info,
+    }
+
+
+@app.get("/state")
+def state():
+    return _env.state.model_dump()
+
+
+def main(host: str = "0.0.0.0", port: int = 7860):
     import uvicorn
-
     uvicorn.run(app, host=host, port=port)
 
 
 if __name__ == "__main__":
     import argparse
-
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--port", type=int, default=7860)
     args = parser.parse_args()
     main(port=args.port)
