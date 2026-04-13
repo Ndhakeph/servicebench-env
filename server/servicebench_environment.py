@@ -399,7 +399,7 @@ class ServiceBenchEnvironment(Environment):
 
         # Calculate shaped reward
         reward = self._calculate_reward(action, response, call_succeeded)
-        self._state.current_score = min(1.0, max(0.0, self._state.current_score + reward))
+        self._state.current_score = min(0.9999, max(0.0001, self._state.current_score + reward))
 
         # Record action in history
         self._state.actions_taken.append(
@@ -420,7 +420,7 @@ class ServiceBenchEnvironment(Environment):
         # Apply step-count efficiency bonus on completion
         if task_completed:
             bonus = self._completion_bonus()
-            self._state.current_score = min(1.0, self._state.current_score + bonus)
+            self._state.current_score = min(0.9999, self._state.current_score + bonus)
             reward += bonus
 
         error_msg = response.get("error") if not call_succeeded else None
